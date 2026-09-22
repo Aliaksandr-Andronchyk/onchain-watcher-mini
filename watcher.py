@@ -110,7 +110,11 @@ def run(
     start_block: int | None,
 ) -> None:
     conn = init_db(db_path)
-    last_block = start_block if start_block is not None else get_block_number(rpc_url)
+    if start_block is not None:
+        last_block = start_block
+    else:
+        head_now = get_block_number(rpc_url)
+        last_block = head_now - 1 if once else head_now
 
     while True:
         head = get_block_number(rpc_url)
