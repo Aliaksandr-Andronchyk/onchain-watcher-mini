@@ -89,6 +89,37 @@ class WatcherTest(unittest.TestCase):
         self.assertEqual(rows, [("0xabc",)])
         db_path.unlink(missing_ok=True)
 
+    def test_run_once_without_start_block_still_checks_current_block(self):
+        db_path = Path("/tmp/test_watcher_no_start.db")
+        db_path.unlink(missing_ok=True)
+
+        responses = [
+            {"result": "0x5"},
+            {"result": "0x5"},
+            {"result": [LOG_SAMPLE]},
+        ]
+
+        def fake_urlopen(req, timeout=15):
+            return FakeResponse(responses.pop(0))
+
+        with patch.object(urllib.request, "urlopen", side_effect=fake_urlopen):
+            watcher.run(
+                rpc_url="http://rpc",
+                address="0xdead",
+                topic=None,
+                db_path=db_path,
+                tg_token=None,
+                tg_chat_id=None,
+                poll_interval=0,
+                once=True,
+                start_block=None,
+            )
+
+        conn = sqlite3.connect(db_path)
+        rows = conn.execute("SELECT tx_hash FROM находки").fetchall()
+        self.assertEqual(rows, [("0xabc",)])
+        db_path.unlink(missing_ok=True)
+
     def test_format_alert_contains_key_fields(self):
         text = watcher.format_alert(LOG_SAMPLE)
         self.assertIn("0xabc", text)
