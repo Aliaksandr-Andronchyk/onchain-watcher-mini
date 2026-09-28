@@ -121,6 +121,8 @@ def run(
         if head > last_block:
             logs = get_logs(rpc_url, last_block + 1, head, address, topic)
             for log in logs:
+                if log.get("removed"):
+                    continue
                 is_new = save_log(conn, log)
                 if is_new:
                     print(format_alert(log))
