@@ -3,6 +3,7 @@ import argparse
 import json
 import sqlite3
 import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -127,7 +128,10 @@ def run(
                 if is_new:
                     print(format_alert(log))
                     if tg_token and tg_chat_id:
-                        send_telegram_alert(tg_token, tg_chat_id, format_alert(log))
+                        try:
+                            send_telegram_alert(tg_token, tg_chat_id, format_alert(log))
+                        except (urllib.error.URLError, OSError) as e:
+                            print(f"не удалось отправить алерт в Telegram: {e}")
             last_block = head
 
         if once:
