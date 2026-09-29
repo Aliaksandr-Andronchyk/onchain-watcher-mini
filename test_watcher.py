@@ -1,6 +1,7 @@
 import json
 import sqlite3
 import unittest
+import urllib.error
 import urllib.request
 from pathlib import Path
 from unittest.mock import patch
@@ -149,6 +150,38 @@ class WatcherTest(unittest.TestCase):
         conn = sqlite3.connect(db_path)
         rows = conn.execute("SELECT tx_hash FROM находки").fetchall()
         self.assertEqual(rows, [])
+        db_path.unlink(missing_ok=True)
+
+    def test_run_once_survives_telegram_send_failure(self):
+        db_path = Path("/tmp/test_watcher_tg_fail.db")
+        db_path.unlink(missing_ok=True)
+
+        responses = [
+            {"result": "0x5"},
+            {"result": [LOG_SAMPLE]},
+        ]
+
+        def fake_urlopen(req, timeout=15):
+            if "api.telegram.org" in req.full_url:
+                raise urllib.error.HTTPError(req.full_url, 429, "Too Many Requests", {}, None)
+            return FakeResponse(responses.pop(0))
+
+        with patch.object(urllib.request, "urlopen", side_effect=fake_urlopen):
+            watcher.run(
+                rpc_url="http://rpc",
+                address="0xdead",
+                topic=None,
+                db_path=db_path,
+                tg_token="t",
+                tg_chat_id="c",
+                poll_interval=0,
+                once=True,
+                start_block=4,
+            )
+
+        conn = sqlite3.connect(db_path)
+        rows = conn.execute("SELECT tx_hash FROM находки").fetchall()
+        self.assertEqual(rows, [("0xabc",)])
         db_path.unlink(missing_ok=True)
 
     def test_format_alert_contains_key_fields(self):
