@@ -30,6 +30,17 @@ One-shot mode (useful for testing or cron):
 python3 watcher.py --rpc-url https://eth.llamarpc.com --address 0x... --once
 ```
 
+## Flags
+
+- `--rpc-url` (обязателен) – HTTP RPC endpoint EVM-цепи.
+- `--address` – фильтр по адресу контракта.
+- `--topic` – фильтр по topic0 события.
+- `--db` – путь к SQLite базе находок (по умолчанию `watcher.db`).
+- `--tg-token`, `--tg-chat-id` – токен и chat_id для Telegram-алертов.
+- `--poll-interval` – пауза между опросами в секундах (по умолчанию `10`).
+- `--once` – один проход без цикла (для теста или cron).
+- `--start-block` – блок, с которого начать (по умолчанию – текущий).
+
 ## Test
 
 ```bash
