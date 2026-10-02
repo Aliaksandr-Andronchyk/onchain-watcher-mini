@@ -11,6 +11,13 @@ sends a Telegram alert for each match.
 - Persists every match in a SQLite database (dedup on tx hash + log index).
 - Sends a Telegram message via Bot API when a new match is found.
 
+## Файлы
+
+| файл | роль |
+|---|---|
+| `watcher.py` | сам watcher: опрос RPC, фильтр логов, SQLite, алерт в Telegram |
+| `test_watcher.py` | тесты |
+
 ## Run
 
 ```bash
